@@ -67,7 +67,7 @@
         <div id="products" class="mt-2">
 
              
-        <div class="row"><!-- Behövs? <div v-for="products in groupedProducts" class="row"> --> 
+        <div class="row">
             <div v-for="product in products" v-bind:key="product.id" class="col-md-4 col-sm-6">
                 <div class="panel">
                     <img class="product-image" :src="product.image" v-b-popover.click="product.description" :title="product.name">
@@ -119,9 +119,6 @@ export default {
         register_user(){
             axios.post('api/register', this.user)
             .then(res => {
-                //LOGIN AFTER?
-                //localStorage.api_token = res.data.data.api_token;
-                //this.$store.commit('login');
                 this.register = false;
                 alert('You are now registered! Log in!');
             })
@@ -171,7 +168,6 @@ export default {
             this.edit = true;
             this.action = 'Edit product';
             this.product.id = product.id;
-            //this.product.product_id = product.id;
             this.product.name = product.name;
             this.product.description = product.description;
             this.product.price = product.price;
@@ -203,10 +199,6 @@ export default {
         },
     },
     computed:{
-        //Behövs?
-        groupedProducts() {
-            return _.chunk(this.products, 3)
-        },
         loggedIn(){
             return this.$store.getters.loggedIn
         }
@@ -219,10 +211,6 @@ export default {
         if(localStorage.api_token){
             this.$store.commit('login')                       
         }
-    },
-  watch: {
-/*    api_token(newApiToken) {
-      localStorage.api_token = newApiToken;*/
     }
   }
 </script>
