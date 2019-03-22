@@ -5,32 +5,55 @@
 </button>
         <h1>Products</h1>
         <hr>
-        <div v-if="!loggedIn">
+        <!-- LOGIN FORM -->
+        <div v-if="!loggedIn && !register">
             <form class="login" @submit.prevent="login">
-                 <h2>Log in</h2>
-                 <div class="form-group">
-                 <input  class="form-control" required v-model="user.email" type="text" placeholder="Email"/>
+                <h2>Log in</h2>
+                <div class="form-group">
+                    <input  class="form-control" required v-model="user.email" type="text" placeholder="Email"/>
+                </div>
+                <div class="form-group">
+                    <input  class="form-control" required v-model="user.password" type="password" placeholder="Password"/>
+                </div>
+                <button class="btn btn-light" type="submit">Login</button>
+                <a id="register-btn"class="btn btn-light" @click="register = true">Register</a>
+            </form>
+            <hr>
+        </div>
+        <!-- REGISTER FORM -->
+        <div v-if="register">
+            <form class="login" @submit.prevent="register_user">
+                 <h2>Register</h2>
+                <div class="form-group">
+                    <input  class="form-control" required v-model="user.name" type="text" placeholder="Name"/>
                   </div>
-                  <div class="form-group">
-                 <input  class="form-control" required v-model="user.password" type="password" placeholder="Password"/>
-                  </div>
-                 <button class="btn btn-light btn-block" type="submit">Login</button>
+                <div class="form-group">
+                    <input  class="form-control" required v-model="user.email" type="text" placeholder="Email"/>
+                </div>
+                <div class="form-group">
+                    <input  class="form-control" required v-model="user.password" type="password" placeholder="Password"/>
+                </div>
+                <div class="form-group">
+                    <input  class="form-control" required v-model="user.password_confirmation" type="password" placeholder="Confirm password"/>
+                </div>
+                <button class="btn btn-light btn-block" type="submit">Register</button>
             </form>
             <hr>
         </div>
 
-        
+
+        <!-- ADD/EDIT PRODUCT FORM -->
         <div v-if="loggedIn">
             <h3>{{action}}</h3>
             <form @submit.prevent="addProduct">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Name: Max length 20 characters" maxlength="20" v-model="product.name">
+                    <input type="text" class="form-control" required placeholder="Name: Max length 20 characters" maxlength="20" v-model="product.name">
                 </div>
                 <div class="form-group">
                     <textarea type="text" class="form-control" placeholder="Description" v-model="product.description"></textarea>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Price" v-model="product.price">
+                    <input type="text" class="form-control" required placeholder="Price" v-model="product.price">
                 </div>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="Image URL: 150x150px" alt="product image" v-model="product.image">
@@ -41,26 +64,29 @@
             <hr>
         </div>        
 
-        <div id="products" class="mt-2">             
-            <div class="row"> 
-                <div v-for="product in products" v-bind:key="product.id" class="col-md-4 col-sm-6">
-                    <div class="panel">
-                        <img class="product-image" :src="product.image" v-b-popover.click="product.description" :title="product.name">
-                        <div class="product-name-wrapper mt-2">
-                            <h3>{{product.name}}</h3>
-                        </div>
-                        <p class="price">Price: {{product.price}}$</p>
-                        <div v-if="loggedIn">
-                            <button @click="editProduct(product)" class="btn btn-sm btn-outline-primary">Edit</button>
+        <div id="products" class="mt-2">
 
-                            <button @click="deleteProduct(product.id)" class="btn  btn-sm btn-outline-danger">Delete</button>
-                        </div>
+             
+        <div class="row"><!-- Behövs? <div v-for="products in groupedProducts" class="row"> --> 
+            <div v-for="product in products" v-bind:key="product.id" class="col-md-4 col-sm-6">
+                <div class="panel">
+                    <img class="product-image" :src="product.image" v-b-popover.click="product.description" :title="product.name">
+                    <div class="product-name-wrapper mt-2">
+                        <h3>{{product.name}}</h3>
+                    </div>
+                    <p class="price">Price: {{product.price}}$</p>
+                    <div v-if="loggedIn">
+                        <button @click="editProduct(product)" class="btn btn-sm btn-outline-primary">Edit</button>
 
-                        <hr>
-                     </div>                        
-                </div>
+                        <button @click="deleteProduct(product.id)" class="btn  btn-sm btn-outline-danger">Delete</button>
+                    </div>
+
+                    <hr>
+                 </div>
+                    
+              </div>
              </div>
-        </div>
+ <!---->        </div>
     </div>
 </template>
 <script>
@@ -78,22 +104,36 @@ export default {
                 image: ''
             },
             edit: false,
+            register: false,
             action: '',
             actionDefault: 'Add product',
             user: {
+                name: '',
                 email: '',
-                password: ''
+                password: '',
+                password_confirmation: ''
             },
         }
     },
     methods: {
+        register_user(){
+            axios.post('api/register', this.user)
+            .then(res => {
+                //LOGIN AFTER?
+                //localStorage.api_token = res.data.data.api_token;
+                //this.$store.commit('login');
+                this.register = false;
+                alert('You are now registered! Log in!');
+            })
+            .catch(err => console.log(err)); 
+        },
         login(){
-                axios.post('api/login', this.user)
-                .then(res => {
-                    localStorage.api_token = res.data.data.api_token;
-                    this.$store.commit('login');
-                })
-                .catch(err => console.log(err)); 
+            axios.post('api/login', this.user)
+            .then(res => {
+                localStorage.api_token = res.data.data.api_token;
+                this.$store.commit('login');
+            })
+            .catch(err => console.log(err)); 
         },
         addProduct(){
            if (this.edit === false){
@@ -163,6 +203,10 @@ export default {
         },
     },
     computed:{
+        //Behövs?
+        groupedProducts() {
+            return _.chunk(this.products, 3)
+        },
         loggedIn(){
             return this.$store.getters.loggedIn
         }
@@ -175,6 +219,10 @@ export default {
         if(localStorage.api_token){
             this.$store.commit('login')                       
         }
+    },
+  watch: {
+/*    api_token(newApiToken) {
+      localStorage.api_token = newApiToken;*/
     }
   }
 </script>
@@ -198,6 +246,10 @@ export default {
 
     .price{
         margin-bottom: 0px;
+    }
+
+    #register-btn{
+        float: right;
     }
 </style>
 
