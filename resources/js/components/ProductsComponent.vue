@@ -7,7 +7,7 @@
         <hr>
         <!-- LOGIN FORM -->
         <div v-if="!loggedIn && !register">
-            <form class="login" @submit.prevent="login">
+            <form @submit.prevent="login">
                 <h2>Log in</h2>
                 <div class="form-group">
                     <input  class="form-control" required v-model="user.email" type="text" placeholder="Email"/>
@@ -22,7 +22,7 @@
         </div>
         <!-- REGISTER FORM -->
         <div v-if="register">
-            <form class="login" @submit.prevent="register_user">
+            <form @submit.prevent="register_user">
                  <h2>Register</h2>
                 <div class="form-group">
                     <input  class="form-control" required v-model="user.name" type="text" placeholder="Name"/>
