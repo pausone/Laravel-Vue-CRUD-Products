@@ -1,7 +1,9 @@
 ## Laravel/Vue application for performing CRUD operations on products. 
-##### Built on Laravel API https://github.com/pausone/Laravel-API
+Built on Laravel API https://github.com/pausone/Laravel-API
 
-TODO: Validate input
+Uses Uses Laravel, Vue, Vuex, Vuelidate for validation, Bootstrap and BootstrapVue.
+
+Frontend and backend form validation
 ## Screenshots
 #### Start page with login form and products
 ![Image login](/screenshots/before_login.JPG) 
