@@ -128,9 +128,6 @@ export default {
     },
     methods: {
         addProduct(){
-            //console.log(this.$v.product.name.minLength);
-            //console.log(this.checkData);
-            //this.checkData = false
             this.showErrors = true
 
             if(!this.$v.product.$invalid){
@@ -170,7 +167,6 @@ export default {
             this.edit = true;
             this.action = 'Edit product';
             this.product.id = product.id;
-            //this.product.product_id = product.id;
             this.product.name = product.name;
             this.product.description = product.description;
             this.product.price = product.price;
@@ -219,10 +215,6 @@ export default {
         if(localStorage.api_token){
             this.$store.commit('login')                       
         }
-    },
-  watch: {
-/*    api_token(newApiToken) {
-      localStorage.api_token = newApiToken;*/
     }
   }
 </script>
