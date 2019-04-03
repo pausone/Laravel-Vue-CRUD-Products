@@ -14,6 +14,8 @@ window.BootstrapVue = require('bootstrap-vue');
 
 window.Vuex = require('vuex');
 
+import Vuelidate from 'vuelidate'
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -25,9 +27,10 @@ window.Vuex = require('vuex');
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
 
-
 Vue.component('products-component', require('./components/ProductsComponent.vue').default);
 Vue.component('navbar', require('./components/Navbar.vue').default);
+
+Vue.use(Vuelidate);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -37,7 +40,8 @@ Vue.component('navbar', require('./components/Navbar.vue').default);
 
 const store = new Vuex.Store({
     state: {
-        loggedIn: false
+        loggedIn: false,
+        register: false
     },
     mutations: {
     	logout(state){
@@ -45,7 +49,13 @@ const store = new Vuex.Store({
     	},
     	login(state){
     		state.loggedIn = true;
-    	}
+    	},
+        registerComplete(state){
+            state.register = false
+        },
+        register(state){
+            state.register = true;
+        }
     },
     actions: {
 
@@ -53,7 +63,10 @@ const store = new Vuex.Store({
     getters: {
     	loggedIn(state){
     		return state.loggedIn;
-    	}
+    	},
+        register(state){
+            return state.register;
+        }
     }
 });
 
