@@ -5,58 +5,39 @@
 </button>
         <h1>Products</h1>
         <hr>
-        <!-- LOGIN FORM -->
-        <div v-if="!loggedIn && !register">
-            <form @submit.prevent="login">
-                <h2>Log in</h2>
-                <div class="form-group">
-                    <input  class="form-control" required v-model="user.email" type="text" placeholder="Email"/>
-                </div>
-                <div class="form-group">
-                    <input  class="form-control" required v-model="user.password" type="password" placeholder="Password"/>
-                </div>
-                <button class="btn btn-light" type="submit">Login</button>
-                <a id="register-btn"class="btn btn-light" @click="register = true">Register</a>
-            </form>
-            <hr>
-        </div>
-        <!-- REGISTER FORM -->
-        <div v-if="register">
-            <form @submit.prevent="register_user">
-                 <h2>Register</h2>
-                <div class="form-group">
-                    <input  class="form-control" required v-model="user.name" type="text" placeholder="Name"/>
-                  </div>
-                <div class="form-group">
-                    <input  class="form-control" required v-model="user.email" type="text" placeholder="Email"/>
-                </div>
-                <div class="form-group">
-                    <input  class="form-control" required v-model="user.password" type="password" placeholder="Password"/>
-                </div>
-                <div class="form-group">
-                    <input  class="form-control" required v-model="user.password_confirmation" type="password" placeholder="Confirm password"/>
-                </div>
-                <button class="btn btn-light btn-block" type="submit">Register</button>
-            </form>
-            <hr>
-        </div>
-
+        <LoginForm v-if="!loggedIn && !this.$store.getters.register" v-bind:user="user"/>
+        <RegisterForm v-if="this.$store.getters.register" v-bind:user="user"/>
 
         <!-- ADD/EDIT PRODUCT FORM -->
         <div v-if="loggedIn">
             <h3>{{action}}</h3>
-            <form @submit.prevent="addProduct">
+            <form id="product-form" @submit.prevent="addProduct">
                 <div class="form-group">
-                    <input type="text" class="form-control" required placeholder="Name: Max length 20 characters" maxlength="20" v-model="product.name">
+                    <input type="text" class="form-control" placeholder="Name: Max length 20" maxlength="20" v-model="product.name">
+                    <div v-if="showErrors">
+                        <p v-if="!$v.product.name.required" class="alert alert-danger">The name field is required</p>
+                    </div>
                 </div>
                 <div class="form-group">
                     <textarea type="text" class="form-control" placeholder="Description" v-model="product.description"></textarea>
+                     <div v-if="showErrors">
+                        <p v-if="!$v.product.description.required" class="alert alert-danger">The description field is required</p>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <input type="text" class="form-control" required placeholder="Price" v-model="product.price">
+                    <input type="text" class="form-control" placeholder="Price" v-model="product.price">
+                     <div v-if="showErrors">
+                        <p v-if="!$v.product.price.required" class="alert alert-danger">The price field is required</p>
+                        <p v-if="!$v.product.price.decimal" class="alert alert-danger">The price must be a number</p>
+                        <p v-if="!$v.product.price.between" class="alert alert-danger">The price must be a positive number</p>
+                    </div>
                 </div>
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="Image URL: 150x150px" alt="product image" v-model="product.image">
+                     <div v-if="showErrors">
+                        <p v-if="!$v.product.image.required" class="alert alert-danger">The image field is required</p>
+                        <p v-if="!$v.product.image.url" class="alert alert-danger">URL required</p>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-light btn-block">Save</button>
                 <center><button v-if="edit == true" @click="resetData()" class="btn btn-danger">Cancel</button></center>
@@ -64,34 +45,36 @@
             <hr>
         </div>        
 
-        <div id="products" class="mt-2">
+        <div id="products" class="mt-2">             
+            <div class="row"> 
+                <div v-for="product in products" v-bind:key="product.id" class="col-md-4 col-sm-6">
+                    <div class="panel">
+                        <img class="product-image" :src="product.image" v-b-popover.click="product.description" :title="product.name">
+                        <div class="product-name-wrapper mt-2">
+                            <h3>{{product.name}}</h3>
+                        </div>
+                        <p class="price">Price: {{product.price}}$</p>
+                        <div v-if="loggedIn">
+                            <button @click="editProduct(product)" class="btn btn-sm btn-outline-primary">Edit</button>
 
-             
-        <div class="row">
-            <div v-for="product in products" v-bind:key="product.id" class="col-md-4 col-sm-6">
-                <div class="panel">
-                    <img class="product-image" :src="product.image" v-b-popover.click="product.description" :title="product.name">
-                    <div class="product-name-wrapper mt-2">
-                        <h3>{{product.name}}</h3>
-                    </div>
-                    <p class="price">Price: {{product.price}}$</p>
-                    <div v-if="loggedIn">
-                        <button @click="editProduct(product)" class="btn btn-sm btn-outline-primary">Edit</button>
-
-                        <button @click="deleteProduct(product.id)" class="btn  btn-sm btn-outline-danger">Delete</button>
-                    </div>
-
-                    <hr>
-                 </div>
-                    
-              </div>
-             </div>
- <!---->        </div>
+                            <button @click="deleteProduct(product.id)" class="btn  btn-sm btn-outline-danger">Delete</button>
+                        </div>
+                        <hr>
+                     </div>                        
+                  </div>
+            </div>
+      </div>
     </div>
 </template>
 <script>
+import LoginForm from './LoginForm.vue'
+import RegisterForm from './RegisterForm.vue'
+import { required, minLength, decimal, url, between } from 'vuelidate/lib/validators'
+
 export default {
       components: {
+        LoginForm,
+        RegisterForm
       },
     data(){
         return{
@@ -103,71 +86,91 @@ export default {
                 price: '',
                 image: ''
             },
-            edit: false,
-            register: false,
-            action: '',
-            actionDefault: 'Add product',
             user: {
                 name: '',
                 email: '',
                 password: '',
                 password_confirmation: ''
             },
+            edit: false,
+            register: false,
+            action: '',
+            actionDefault: 'Add product',
+            showErrors: false
+        }
+    },
+    validations: {
+        product: {
+            name:{
+                required: required
+            },
+            description:{
+                required: required
+            },
+            price:{
+                required: required,
+                decimal: decimal,
+                between: between(0.1, 100000000)
+            },
+            image:{
+                required: required,
+                url: url
+            }
+        },
+        user: {
+            email:{
+                required: required
+            },
+            password:{
+                required: required
+            }
         }
     },
     methods: {
-        register_user(){
-            axios.post('api/register', this.user)
-            .then(res => {
-                this.register = false;
-                alert('You are now registered! Log in!');
-            })
-            .catch(err => console.log(err)); 
-        },
-        login(){
-            axios.post('api/login', this.user)
-            .then(res => {
-                localStorage.api_token = res.data.data.api_token;
-                this.$store.commit('login');
-            })
-            .catch(err => console.log(err)); 
-        },
         addProduct(){
-           if (this.edit === false){
-                //Add token to product
-                this.product.api_token = localStorage.api_token;
+            //console.log(this.$v.product.name.minLength);
+            //console.log(this.checkData);
+            //this.checkData = false
+            this.showErrors = true
 
-                //Add new product
-                axios.post('api/products', this.product)
-                .then(data => {
-                    this.product.name = '';
-                    this.product.description = '';
-                    this.product.price = '';
-                    this.product.image = '';
-                    alert('Product Added');
-                    this.getProducts();
-                })
-                .catch(err => console.log(err));                
-            }
-            else{
-                //Update product
-                //Add token to product
-                this.product.api_token = localStorage.api_token;
+            if(!this.$v.product.$invalid){
+               if (this.edit === false){
+                    //Add token to product
+                    this.product.api_token = localStorage.api_token;
 
-                axios.put('api/products/' + this.product.id, this.product)
-                .then(data => {
-                    this.resetData();
+                    //Add new product
+                    axios.post('api/products', this.product)
+                    .then(data => {
+                        this.product.name = '';
+                        this.product.description = '';
+                        this.product.price = '';
+                        this.product.image = '';
+                        alert('Product Added');
+                        this.getProducts();
+                    })
+                    .catch(err => console.log(err));                
+                }
+                else{//Update product                    
+                    //Add token to product
+                    this.product.api_token = localStorage.api_token;
 
-                    alert('Product Updated');
-                    this.getProducts();
-                })
-                .catch(err => console.log(err));  
+                    axios.put('api/products/' + this.product.id, this.product)
+                    .then(data => {
+                        this.resetData();
+
+                        alert('Product Updated');
+                        this.getProducts();
+                    })
+                    .catch(err => console.log(err));  
+                }
             }
         },
         editProduct(product){
+            this.showErrors = false;
             this.edit = true;
             this.action = 'Edit product';
             this.product.id = product.id;
+            //this.product.product_id = product.id;
             this.product.name = product.name;
             this.product.description = product.description;
             this.product.price = product.price;
@@ -189,6 +192,7 @@ export default {
             .catch(err => console.log(err));            
         },
         resetData(){
+            this.showErrors = false;
             this.action = this.actionDefault;
             this.edit = false;
             this.product.id = '';
@@ -199,6 +203,10 @@ export default {
         },
     },
     computed:{
+        //Behövs?
+        groupedProducts() {
+            return _.chunk(this.products, 3)
+        },
         loggedIn(){
             return this.$store.getters.loggedIn
         }
@@ -211,6 +219,10 @@ export default {
         if(localStorage.api_token){
             this.$store.commit('login')                       
         }
+    },
+  watch: {
+/*    api_token(newApiToken) {
+      localStorage.api_token = newApiToken;*/
     }
   }
 </script>
@@ -234,10 +246,6 @@ export default {
 
     .price{
         margin-bottom: 0px;
-    }
-
-    #register-btn{
-        float: right;
     }
 </style>
 
